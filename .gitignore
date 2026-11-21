@@ -8,3 +8,15 @@ coverage/
 .idea/
 .vscode/
 .DS_Store
+
+# Secrets and credentials — never commit
+*.pem
+*.key
+*.p12
+*.pfx
+credentials
+.aws/
+kubeconfig
+*.kubeconfig
+secrets.auto.tfvars
+*.secret.*
