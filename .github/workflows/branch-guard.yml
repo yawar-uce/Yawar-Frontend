@@ -1,0 +1,32 @@
+name: branch-guard
+
+# Enforces the promotion order: feature/* → dev → qa → production
+on:
+  pull_request:
+    types: [opened, reopened, synchronize, edited]
+
+permissions:
+  contents: read
+
+jobs:
+  branch-guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check source and target branches
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          echo "PR: $HEAD → $BASE"
+          case "$BASE" in
+            production)
+              [ "$HEAD" = "qa" ] || { echo "::error::Only 'qa' can be merged into 'production'"; exit 1; } ;;
+            qa)
+              [ "$HEAD" = "dev" ] || { echo "::error::Only 'dev' can be merged into 'qa'"; exit 1; } ;;
+            dev)
+              if ! echo "$HEAD $TITLE" | grep -qE 'YAW-[0-9]+'; then
+                echo "::error::Branch name or PR title must contain a Jira key (YAW-123)"; exit 1
+              fi ;;
+          esac
+          echo "Branch flow OK"

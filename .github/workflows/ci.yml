@@ -1,0 +1,42 @@
+name: ci
+
+on:
+  pull_request:
+    branches: [dev, qa, production]
+  push:
+    branches: [dev, qa, production]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Lint, test and build every app
+        run: |
+          shopt -s nullglob
+          apps=(apps/*/package.json)
+          if [ ${#apps[@]} -eq 0 ]; then
+            echo "No apps yet — nothing to build"; exit 0
+          fi
+          for pkg in "${apps[@]}"; do
+            dir=$(dirname "$pkg")
+            echo "::group::$dir"
+            (cd "$dir" && npm ci && npm run lint --if-present && npm test --if-present && npm run build)
+            echo "::endgroup::"
+          done
+
+      - name: Trivy filesystem scan (V-03)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: fs
+          severity: HIGH,CRITICAL
+          exit-code: '1'
+          ignore-unfixed: true
