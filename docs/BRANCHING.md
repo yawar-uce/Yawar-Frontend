@@ -11,7 +11,7 @@ feature/YAW-xx-name ──PR──▶ dev ──PR──▶ qa ──PR──▶
 |---|---|---|---|
 | `dev` | team | PR, `ci` + `branch-guard` green, Jira key in branch/title | In DEV |
 | `qa` | team | PR only from `dev`, `ci` + `branch-guard` green | QA |
-| `production` | **@JuanGuevara90** approves | PR only from `qa`, code-owner approval, QA report | Done |
+| `production` | **@JuanGuevara90** approves | PR only from `qa`, `professor-approval` check (his approval on the latest commit), QA report | Done |
 
 Direct pushes, force pushes and deletion are blocked on the three branches.
 
@@ -37,3 +37,8 @@ Direct pushes, force pushes and deletion are blocked on the three branches.
 | Build fixed | → In Review |
 
 Requires the **GitHub for Jira** app and GitHub environments named `dev`, `qa`, `production`.
+
+## Professor approval (qa → production only)
+The `production-approval` workflow runs only on PRs targeting `production`:
+it requests @JuanGuevara90's review and the required check `professor-approval`
+passes only when he has approved the latest commit. PRs to `dev` and `qa` never notify him.

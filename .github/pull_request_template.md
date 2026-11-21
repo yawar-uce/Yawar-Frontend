@@ -22,4 +22,4 @@ YAW-
 ### Only for promotion to `production`
 - [ ] QA report attached (V-05 stress, V-07 recovery, V-09 ZAP)
 - [ ] Release tag and notes prepared
-- [ ] Approved by the professor (code owner)
+- [ ] Approved by the professor (`professor-approval` check green)

@@ -1,4 +1,0 @@
-# Code owners — their review is required ONLY where a ruleset enables
-# "Require review from Code Owners" (branch: production).
-# Flow: feature/* → dev → qa → production (qa → production approved by the professor).
-*       @JuanGuevara90

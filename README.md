@@ -18,4 +18,4 @@ docs/        branching, QA reports
 
 ## Workflow
 See [docs/BRANCHING.md](docs/BRANCHING.md): `feature/YAW-xx` → `dev` → `qa` → `production`.
-Promotion to `production` requires approval from @JuanGuevara90.
+Promotion to `production` requires approval from @JuanGuevara90 (`professor-approval` check).

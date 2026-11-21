@@ -1,0 +1,48 @@
+name: production-approval
+
+# Only for PRs qa → production:
+#  1. requests the professor's review (the only PRs he is notified about)
+#  2. 'professor-approval' check passes only when he has approved the latest commit
+on:
+  pull_request:
+    branches: [production]
+    types: [opened, reopened, synchronize, ready_for_review]
+  pull_request_review:
+    types: [submitted, dismissed]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  APPROVER: JuanGuevara90
+
+jobs:
+  request-review:
+    if: github.event_name == 'pull_request' && (github.event.action == 'opened' || github.event.action == 'ready_for_review' || github.event.action == 'reopened')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request the professor's review
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: gh api -X POST "repos/${{ github.repository }}/pulls/$PR/requested_reviewers" -f "reviewers[]=$APPROVER"
+
+  professor-approval:
+    if: github.event.pull_request.base.ref == 'production'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the professor approved the latest commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          state=$(gh api "repos/${{ github.repository }}/pulls/$PR/reviews" --paginate \
+            --jq "[.[] | select(.user.login == \"$APPROVER\" and .state != \"COMMENTED\")] | last | \"\(.state) \(.commit_id)\"")
+          echo "Latest review by $APPROVER: $state"
+          if [ "$state" = "APPROVED $HEAD_SHA" ]; then
+            echo "Approved by $APPROVER"
+          else
+            echo "::error::Waiting for approval from @$APPROVER on the latest commit"; exit 1
+          fi
