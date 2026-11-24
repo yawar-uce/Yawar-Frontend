@@ -1,6 +1,8 @@
 name: branch-guard
 
 # Enforces the promotion order: feature/* → dev → qa → production
+# and, on PRs to dev, the commit/PR title format (gitmoji + Conventional Commits + Jira key).
+# Promotion PRs to qa/production skip the format check.
 on:
   pull_request:
     types: [opened, reopened, synchronize, edited]
@@ -30,3 +32,34 @@ jobs:
               fi ;;
           esac
           echo "Branch flow OK"
+
+      - name: Checkout PR commits
+        if: github.base_ref == 'dev'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Check commit and PR title format
+        if: github.base_ref == 'dev'
+        env:
+          BASE: ${{ github.base_ref }}
+          TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          export LC_ALL=C.UTF-8
+          REGEX='^(✨|🐛|🔒️|📝|🎨|♻️|⚡️|✅|🏗️|👷|🔧|🗃️|🧱|⬆️|⏪️|🚀) (feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|release)(\([a-z0-9-]+\))?!?: .+ \(YAW-[0-9]+(, YAW-[0-9]+)*\)$'
+          fail=0
+          if ! printf '%s\n' "$TITLE" | grep -qE "$REGEX"; then
+            echo "::error::PR title does not follow '<emoji> <type>(<scope>): <subject> (YAW-<n>)'"
+            printf '  title: %s\n' "$TITLE"
+            fail=1
+          fi
+          bad=$(git log --no-merges --format=%s "origin/$BASE..HEAD" | grep -vE "$REGEX" || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Commit headers do not follow '<emoji> <type>(<scope>): <subject> (YAW-<n>)'"
+            printf '%s\n' "$bad" | sed 's/^/  commit: /'
+            fail=1
+          fi
+          [ "$fail" -eq 0 ] || { echo "See docs/BRANCHING.md → Commit and PR format"; exit 1; }
+          git log --no-merges --format='  ok: %s' "origin/$BASE..HEAD"
+          echo "Commit and PR title format OK"
