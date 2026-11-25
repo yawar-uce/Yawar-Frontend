@@ -14,7 +14,7 @@ docs/        branching, QA reports
 | Front | Backend it uses | Jira |
 |---|---|---|
 | Login (Keycloak OIDC) | Identity / API Gateway | EP-07 |
-| Donor registration and profile | `ms-donantes` | EP-01 |
+| Donor registration and profile | `ms-donors` | EP-01 |
 
 ## Workflow
 See [docs/BRANCHING.md](docs/BRANCHING.md): `feature/YAW-xx` → `dev` → `qa` → `production`.
