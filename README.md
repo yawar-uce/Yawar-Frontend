@@ -23,6 +23,13 @@ npm test         # Vitest with coverage (threshold 70 %)
 npm run build    # type check + production build in web/dist
 ```
 
+## Sign-in (web)
+Authorization Code + PKCE against the Keycloak realm of Yawar-Backend (client `yawar-web`). Start that
+stack first (`make up` in Yawar-Backend); the app must run on http://localhost:5173, the registered
+redirect URI. Defaults target the local stack; override them with the variables in `web/.env.example`.
+Tokens stay in memory: a reload restores the session with a silent check against Keycloak. Any host that
+serves the build must answer unknown paths (such as `/callback`) with `index.html`.
+
 ## Sprint 2
 | Front | Backend it uses | Jira |
 |---|---|---|
