@@ -1,0 +1,6 @@
+{
+  "name": "@yawar/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Capacitor Android wrapper around the web build (YAW-221)"
+}

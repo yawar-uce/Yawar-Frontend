@@ -1,0 +1,6 @@
+{
+  "name": "@yawar/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Electron wrapper around the web build (YAW-220)"
+}

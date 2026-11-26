@@ -26,19 +26,12 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Lint, test and build every app
+      - name: Install, lint, test and build every workspace
         run: |
-          shopt -s nullglob
-          apps=(apps/*/package.json)
-          if [ ${#apps[@]} -eq 0 ]; then
-            echo "No apps yet — nothing to build"; exit 0
-          fi
-          for pkg in "${apps[@]}"; do
-            dir=$(dirname "$pkg")
-            echo "::group::$dir"
-            (cd "$dir" && npm ci && npm run lint --if-present && npm test --if-present && npm run build)
-            echo "::endgroup::"
-          done
+          npm ci
+          npm run lint
+          npm test
+          npm run build
 
       - name: Trivy filesystem scan (V-03)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25  # v0.36.0
