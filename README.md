@@ -30,6 +30,22 @@ redirect URI. Defaults target the local stack; override them with the variables 
 Tokens stay in memory: a reload restores the session with a silent check against Keycloak. Any host that
 serves the build must answer unknown paths (such as `/callback`) with `index.html`.
 
+## Sign-up and donor home
+`/signup` offers "Continuar con Google" or email plus consent; Keycloak creates the account, the password
+and the recorded consent. `/donor` reads `GET /api/v1/donors/me` through the API Gateway
+(`VITE_API_URL`, default http://localhost:8000).
+
+## End-to-end tests (web)
+They run against the local stack, so CI does not run them. From an up-to-date `dev` of Yawar-Backend:
+`make up PROFILE=platform` and `make keycloak-import`. Then, here:
+```bash
+npx playwright install chromium   # once
+npm run e2e                       # report in web/playwright-report
+```
+Each run creates a fictional `e2e.*@example.test` account. Set `E2E_KEYCLOAK_ADMIN_PASSWORD` (and
+`E2E_KEYCLOAK_ADMIN_USER` if it is not `admin`) to remove it from Keycloak afterwards; its donor row
+stays in the local `donors_db`.
+
 ## Sprint 2
 | Front | Backend it uses | Jira |
 |---|---|---|
