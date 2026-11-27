@@ -32,6 +32,8 @@ export function AuthProvider({ client, children }: Props) {
     () => ({
       state,
       login: client.login,
+      register: client.register,
+      loginWithGoogle: client.loginWithGoogle,
       logout: client.logout,
       getToken: client.getToken,
     }),

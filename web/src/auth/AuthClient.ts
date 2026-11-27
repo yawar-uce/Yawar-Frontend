@@ -10,6 +10,9 @@ export interface AuthClient {
   /** Restores an existing single sign-on session or completes a login redirect. */
   init(): Promise<Session | null>;
   login(returnTo: string): Promise<void>;
+  /** Opens the identity provider sign-up form with the email already typed. */
+  register(returnTo: string, email: string): Promise<void>;
+  loginWithGoogle(returnTo: string): Promise<void>;
   logout(): Promise<void>;
   /** A valid access token, refreshed if it is about to expire. */
   getToken(): Promise<string | undefined>;
