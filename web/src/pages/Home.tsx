@@ -8,6 +8,11 @@ export function Home() {
     <>
       <h1>Yawar</h1>
       <p>Red de gestión de donación de sangre del Ecuador.</p>
+      {state.status === 'anonymous' && (
+        <p>
+          <Link to="/signup">Quiero ser donante: crear mi cuenta</Link>
+        </p>
+      )}
       {state.status === 'authenticated' && (
         <p>
           {state.session.roles.includes('donor') ? (

@@ -1,11 +1,20 @@
-import type { Role } from '@yawar/shared';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createApiClient, type Role } from '@yawar/shared';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApiContext } from './api/context';
 import { App } from './App';
 import type { AuthClient, Session } from './auth/AuthClient';
 import { AuthProvider } from './auth/AuthProvider';
 import { saveReturnTo } from './auth/returnTo';
+
+/** The pages have their own tests; here the gateway never answers. */
+const pendingApi = createApiClient({
+  baseUrl: 'http://gateway',
+  getToken: async () => undefined,
+  fetch: () => new Promise(() => {}),
+});
 
 function renderApp(path: string, init: () => Promise<Session | null>) {
   let endSession = () => {};
@@ -13,6 +22,8 @@ function renderApp(path: string, init: () => Promise<Session | null>) {
     init,
     login: vi.fn().mockResolvedValue(undefined),
     logout: vi.fn().mockResolvedValue(undefined),
+    register: vi.fn(),
+    loginWithGoogle: vi.fn(),
     getToken: vi.fn(),
     onSessionEnd: (listener) => {
       endSession = listener;
@@ -21,9 +32,13 @@ function renderApp(path: string, init: () => Promise<Session | null>) {
   };
   render(
     <MemoryRouter initialEntries={[path]}>
-      <AuthProvider client={client}>
-        <App />
-      </AuthProvider>
+      <QueryClientProvider client={new QueryClient()}>
+        <AuthProvider client={client}>
+          <ApiContext.Provider value={pendingApi}>
+            <App />
+          </ApiContext.Provider>
+        </AuthProvider>
+      </QueryClientProvider>
     </MemoryRouter>,
   );
   return { client, endSession: () => act(() => endSession()) };
@@ -113,6 +128,20 @@ describe('App', () => {
     endSession();
 
     expect(await heading('Inicia sesión para continuar')).toBeDefined();
+  });
+
+  it('offers sign-up to an anonymous visitor', async () => {
+    renderApp('/', anonymous);
+
+    fireEvent.click(await screen.findByRole('link', { name: 'Crear cuenta' }));
+
+    expect(await heading('Crea tu cuenta de donante')).toBeDefined();
+  });
+
+  it('sends a signed-in user away from sign-up', async () => {
+    renderApp('/signup', signedIn('donor'));
+
+    expect(await heading('Yawar')).toBeDefined();
   });
 
   it('shows a not found page for unknown routes', async () => {
