@@ -4,7 +4,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default tseslint.config(
-  { ignores: ['**/dist/**', '**/coverage/**'] },
+  { ignores: ['**/dist/**', '**/coverage/**', '**/playwright-report/**', '**/test-results/**'] },
   js.configs.recommended,
   tseslint.configs.recommended,
   {
@@ -12,5 +12,9 @@ export default tseslint.config(
     languageOptions: { globals: globals.browser },
     plugins: { 'react-hooks': reactHooks },
     rules: reactHooks.configs.recommended.rules,
+  },
+  {
+    files: ['web/e2e/**/*.ts', 'web/playwright.config.ts'],
+    languageOptions: { globals: globals.node },
   },
 );
