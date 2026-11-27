@@ -12,6 +12,7 @@ function fakeKeycloak(overrides: Record<string, unknown> = {}) {
     init: vi.fn().mockResolvedValue(true),
     login: vi.fn().mockResolvedValue(undefined),
     logout: vi.fn().mockResolvedValue(undefined),
+    register: vi.fn().mockResolvedValue(undefined),
     updateToken: vi.fn().mockResolvedValue(false),
     ...overrides,
   };
@@ -57,8 +58,36 @@ describe('createKeycloakAuth', () => {
 
     await authFor(keycloak).login('/donor');
 
-    expect(keycloak.login).toHaveBeenCalledWith({ redirectUri: 'http://app/callback' });
+    expect(keycloak.login).toHaveBeenCalledWith({
+      redirectUri: 'http://app/callback',
+      locale: 'es',
+    });
     expect(readReturnTo()).toBe('/donor');
+  });
+
+  it('opens the sign-up form with the typed email', async () => {
+    const keycloak = fakeKeycloak();
+
+    await authFor(keycloak).register('/donor', 'ana@example.test');
+
+    expect(keycloak.register).toHaveBeenCalledWith({
+      redirectUri: 'http://app/callback',
+      locale: 'es',
+      loginHint: 'ana@example.test',
+    });
+    expect(readReturnTo()).toBe('/donor');
+  });
+
+  it('goes straight to Google', async () => {
+    const keycloak = fakeKeycloak();
+
+    await authFor(keycloak).loginWithGoogle('/donor');
+
+    expect(keycloak.login).toHaveBeenCalledWith({
+      redirectUri: 'http://app/callback',
+      locale: 'es',
+      idpHint: 'google',
+    });
   });
 
   it('logs out back to the landing page', async () => {

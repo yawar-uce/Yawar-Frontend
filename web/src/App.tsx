@@ -3,7 +3,9 @@ import { Link, Navigate, Route, Routes } from 'react-router';
 import { useAuth } from './auth/context';
 import { RequireRole } from './auth/RequireRole';
 import { readReturnTo } from './auth/returnTo';
+import { DonorHome } from './pages/DonorHome';
 import { Home } from './pages/Home';
+import { SignUp } from './pages/SignUp';
 
 export function App() {
   const { state, login, logout } = useAuth();
@@ -22,9 +24,14 @@ export function App() {
             </>
           )}
           {state.status === 'anonymous' && (
-            <button type="button" onClick={() => void login('/')}>
-              Iniciar sesión
-            </button>
+            <>
+              <Link className="push" to="/signup">
+                Crear cuenta
+              </Link>
+              <button type="button" onClick={() => void login('/')}>
+                Iniciar sesión
+              </button>
+            </>
           )}
         </nav>
       </header>
@@ -44,10 +51,14 @@ export function App() {
             <Route path="/" element={<Home />} />
             <Route path="/callback" element={<Navigate to={readReturnTo()} replace />} />
             <Route
+              path="/signup"
+              element={state.status === 'anonymous' ? <SignUp /> : <Navigate to="/" replace />}
+            />
+            <Route
               path="/donor"
               element={
                 <RequireRole allowed={['donor']}>
-                  <h1>Portal del donante</h1>
+                  <DonorHome />
                 </RequireRole>
               }
             />

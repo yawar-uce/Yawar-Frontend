@@ -37,13 +37,20 @@ export function createKeycloakAuth(
     };
   }
 
+  /** Remembers where to go back; the sign-in pages are shown in Spanish, like the app. */
+  function redirectOptions(returnTo: string) {
+    saveReturnTo(returnTo);
+    return { redirectUri: `${origin}/callback`, locale: 'es' };
+  }
+
   return {
     // keycloak-js accepts a single init call, and React Strict Mode runs effects twice.
     init: () => (started ??= start()),
-    login: (returnTo) => {
-      saveReturnTo(returnTo);
-      return keycloak.login({ redirectUri: `${origin}/callback` });
-    },
+    login: (returnTo) => keycloak.login(redirectOptions(returnTo)),
+    register: (returnTo, email) =>
+      keycloak.register({ ...redirectOptions(returnTo), loginHint: email }),
+    loginWithGoogle: (returnTo) =>
+      keycloak.login({ ...redirectOptions(returnTo), idpHint: 'google' }),
     logout: () => keycloak.logout({ redirectUri: `${origin}/` }),
     async getToken() {
       if (!keycloak.authenticated) return undefined;

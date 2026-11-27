@@ -7,7 +7,10 @@ export type AuthState =
   | { status: 'anonymous' }
   | { status: 'authenticated'; session: Session };
 
-export type AuthContextValue = Pick<AuthClient, 'login' | 'logout' | 'getToken'> & {
+export type AuthContextValue = Pick<
+  AuthClient,
+  'login' | 'register' | 'loginWithGoogle' | 'logout' | 'getToken'
+> & {
   state: AuthState;
 };
 
