@@ -8,11 +8,13 @@ import { ApiContext } from './api/context';
 import { App } from './App';
 import { AuthProvider } from './auth/AuthProvider';
 import { createKeycloakAuth } from './auth/keycloakAuth';
-import { apiUrl, keycloakConfig } from './config';
+import { apiUrl, keycloakConfig, silentSso } from './config';
 import './styles.css';
 
 const queryClient = new QueryClient();
-const auth = createKeycloakAuth(new Keycloak(keycloakConfig));
+const auth = createKeycloakAuth(new Keycloak(keycloakConfig), window.location.origin, {
+  silentSso,
+});
 const api = createApiClient({ baseUrl: apiUrl, getToken: auth.getToken });
 
 createRoot(document.getElementById('root')!).render(
