@@ -2,5 +2,21 @@
   "name": "@yawar/desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "Electron wrapper around the web build (YAW-220)"
+  "productName": "Yawar",
+  "description": "Electron wrapper around the web build (YAW-220)",
+  "author": "Wadri02",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "start": "electron .",
+    "dist:win": "npm run build && electron-builder --win --publish never",
+    "e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65",
+    "electron": "45.5.0",
+    "electron-builder": "26.18.0",
+    "vite": "^8.4.0"
+  }
 }

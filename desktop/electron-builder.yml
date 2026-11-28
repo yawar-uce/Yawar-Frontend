@@ -1,0 +1,17 @@
+appId: ec.yawar.desktop
+productName: Yawar
+directories:
+  output: dist/release
+files:
+  - package.json
+  - src/**/*.js
+  - '!src/**/*.test.js'
+  - dist/web/**
+  - dist/config.json
+win:
+  # A zip builds on Linux and Windows without Wine; no installer or code signing yet.
+  target:
+    - target: zip
+      arch: x64
+  signAndEditExecutable: false
+artifactName: Yawar-${version}-${os}-${arch}.${ext}

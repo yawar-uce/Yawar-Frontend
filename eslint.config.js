@@ -14,7 +14,7 @@ export default tseslint.config(
     rules: reactHooks.configs.recommended.rules,
   },
   {
-    files: ['web/e2e/**/*.ts', 'web/playwright.config.ts'],
+    files: ['web/e2e/**/*.ts', 'web/playwright.config.ts', 'desktop/**/*.{js,mjs,ts}'],
     languageOptions: { globals: globals.node },
   },
 );
