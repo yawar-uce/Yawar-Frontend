@@ -50,6 +50,10 @@ stays in the local `donors_db`.
 `desktop/` wraps the web build in Electron, with its own PKCE client (`yawar-desktop`) and a Windows
 zip (`npm run dist:win --workspace @yawar/desktop`). See [desktop/README.md](desktop/README.md).
 
+## Mobile
+`mobile/` wraps the web build in Capacitor for Android, with its own PKCE client (`yawar-mobile`). It builds a
+debug APK; see [mobile/README.md](mobile/README.md) for the build, the `adb reverse` ports and its limits.
+
 ## Sprint 2
 | Front | Backend it uses | Jira |
 |---|---|---|
