@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { copyFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import path from 'node:path';
-import { build, loadEnv } from 'vite';
+import { build } from 'vite';
 
 const mobile = path.join(import.meta.dirname, '..');
 const web = path.join(mobile, '..', 'web');
@@ -13,7 +13,6 @@ const outDir = path.join(mobile, 'dist', 'web');
 process.env.VITE_KEYCLOAK_CLIENT_ID = 'yawar-mobile';
 // Android does not let the app answer the redirect into the silent single sign-on frame.
 process.env.VITE_SILENT_SSO = 'off';
-const env = loadEnv('production', web, 'VITE_');
 
 await build({ root: web, build: { outDir, emptyOutDir: true } });
 await copyFile(path.join(mobile, 'static', 'error.html'), path.join(outDir, 'error.html'));
@@ -22,5 +21,4 @@ const cli = createRequire(import.meta.url).resolve('@capacitor/cli/package.json'
 execFileSync(process.execPath, [path.join(path.dirname(cli), 'bin', 'capacitor'), 'sync', 'android'], {
   cwd: mobile,
   stdio: 'inherit',
-  env: { ...process.env, VITE_KEYCLOAK_URL: env.VITE_KEYCLOAK_URL ?? '' },
 });

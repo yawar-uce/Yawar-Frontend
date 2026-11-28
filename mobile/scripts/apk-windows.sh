@@ -18,7 +18,7 @@ target=$(wslpath "$local_app_data")/yawar-apk
 rm -rf "$target/node_modules" "$target/mobile/android/app/src"
 mkdir -p "$target/mobile" "$target/node_modules/@capacitor"
 cp -r "$mobile/android" "$target/mobile/"
-cp -r "$repo/node_modules/@capacitor/android" "$repo/node_modules/@capacitor/app" "$target/node_modules/@capacitor/"
+cp -r "$repo/node_modules/@capacitor/android" "$target/node_modules/@capacitor/"
 
 cd "$target/mobile/android"
 WSLENV="${WSLENV:+$WSLENV:}JAVA_HOME:ANDROID_HOME" JAVA_HOME="$java_home" ANDROID_HOME="$android_home" \

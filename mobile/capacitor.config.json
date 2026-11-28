@@ -1,0 +1,9 @@
+{
+  "appId": "ec.yawar.mobile",
+  "appName": "Yawar",
+  "webDir": "dist/web",
+  "server": {
+    "androidScheme": "http",
+    "errorPath": "error.html"
+  }
+}

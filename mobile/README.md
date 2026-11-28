@@ -7,7 +7,8 @@ A minimal Capacitor wrapper over the web build (YAW-221): same screens, same API
 - Sign-in is Authorization Code + PKCE with its own public Keycloak client, `yawar-mobile`
   (Yawar-Backend, `deploy/keycloak`). Tokens stay in memory.
 - `AppRedirectWebViewClient` reloads the redirect from Keycloak back to the app, which Android would
-  otherwise send to the network.
+  otherwise send to the network, and then drops the sign-in pages from the history.
+- Back goes to the previous page; on the first one it sends the app to the background.
 - No silent single sign-on (`VITE_SILENT_SSO=off`): after the app restarts, "Iniciar sesión" brings the
   session back without the password while the Keycloak session lasts.
 - Plain HTTP is allowed for `localhost` only. The API Gateway must allow the origin `http://localhost` in
@@ -32,8 +33,8 @@ set:
 npm run build --workspace @yawar/mobile
 cd mobile/android && ./gradlew assembleDebug    # app/build/outputs/apk/debug/app-debug.apk
 ```
-The Keycloak and API addresses are fixed at build time: set the `VITE_*` variables of `web/.env.example`
-(the client id is always `yawar-mobile`) before building for another environment.
+The API address is fixed at build time (`VITE_API_URL`; HTTPS unless it is `localhost`). Keycloak must be on
+`localhost`: the app opens any other host in the browser, so a build for qa or production needs more work.
 
 ## Run on the emulator
 Start the local stack of Yawar-Backend (`make up PROFILE=platform` and `make keycloak-import`), then forward
@@ -57,4 +58,4 @@ It clears the app's data and leaves a fictional `e2e.mobile.*@example.test` acco
 - The email verification link opens in the browser: verify there, then sign in inside the app.
 - A restart of the app shows it signed out until "Iniciar sesión" is tapped.
 - Only a debug APK, with the default Capacitor icon and splash screen; no push notifications yet.
-- A build for a Keycloak on another host than `localhost` has not been tested.
+- No build for a Keycloak on a host other than `localhost` yet.

@@ -26,6 +26,19 @@ async function launch(): Promise<Page> {
   return page;
 }
 
+async function keyboardShown() {
+  return /mInputShown=true/.test((await device.shell('dumpsys input_method')).toString());
+}
+
+/** Presses the system Back button. An open keyboard takes the first press, so it is closed before. */
+async function pressBack() {
+  if (await keyboardShown()) {
+    await device.shell('input keyevent KEYCODE_BACK');
+    await expect.poll(keyboardShown).toBe(false);
+  }
+  await device.shell('input keyevent KEYCODE_BACK');
+}
+
 async function openSignIn(page: Page) {
   await page.goto(`${APP}/donor`);
   await page.getByRole('main').getByRole('button', { name: 'Iniciar sesión' }).click();
@@ -65,7 +78,7 @@ test('the back button returns from the sign-in page to the app', async () => {
   const page = await launch();
   await openSignIn(page);
 
-  await device.shell('input keyevent KEYCODE_BACK');
+  await pressBack();
 
   await expect(page).toHaveURL(new RegExp(`^${APP}/donor`));
   await expect(page.getByRole('main')).toBeVisible();
@@ -110,4 +123,15 @@ test('donor signs up, signs out and signs in again in the Android app', async ({
   await page.locator('[type="submit"]').click();
   await expectDonorHome(page);
   await device.screenshot({ path: test.info().outputPath('donor-home.png') });
+
+  // Back does not return to the sign-in pages: it leaves the app, which keeps the session.
+  const inForeground = async () =>
+    (await device.shell('dumpsys activity activities'))
+      .toString()
+      .split('\n')
+      .some((line) => /ResumedActivity/.test(line) && line.includes(PACKAGE));
+  await pressBack();
+  await expect.poll(inForeground).toBe(false);
+  await device.shell(`am start -W -n ${PACKAGE}/.MainActivity`);
+  await expectDonorHome(page);
 });
