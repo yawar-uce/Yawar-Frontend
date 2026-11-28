@@ -8,11 +8,13 @@ const MIN_VALIDITY_SECONDS = 30;
 
 /**
  * Authorization Code + PKCE through keycloak-js. Tokens stay in memory: a page reload restores the
- * session from the Keycloak cookie with a silent check, so nothing is written to web storage.
+ * session from the Keycloak cookie with a silent check, so nothing is written to web storage. A client
+ * that cannot run that check (Android) passes `silentSso: false` and asks for sign-in after a reload.
  */
 export function createKeycloakAuth(
   keycloak: Keycloak,
   origin: string = window.location.origin,
+  { silentSso = true }: { silentSso?: boolean } = {},
 ): AuthClient {
   const listeners = new Set<() => void>();
   let started: Promise<Session | null> | undefined;
@@ -21,12 +23,18 @@ export function createKeycloakAuth(
 
   async function start(): Promise<Session | null> {
     const authenticated = await keycloak.init({
-      onLoad: 'check-sso',
+      // The redirect-based adapter on every client: the Android app defines `window.cordova`, which would
+      // select the deprecated Cordova adapter and its unregistered redirect URI.
+      adapter: 'default',
       pkceMethod: 'S256',
-      silentCheckSsoRedirectUri: `${origin}/silent-check-sso.html`,
-      // The fallback would redirect to the current page, which is not a registered redirect URI.
-      silentCheckSsoFallback: false,
       checkLoginIframe: false,
+      // Without these, init only completes a sign-in that is returning to /callback.
+      ...(silentSso && {
+        onLoad: 'check-sso' as const,
+        silentCheckSsoRedirectUri: `${origin}/silent-check-sso.html`,
+        // The fallback would redirect to the current page, which is not a registered redirect URI.
+        silentCheckSsoFallback: false,
+      }),
     });
     if (!authenticated) return null;
 

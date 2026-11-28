@@ -33,10 +33,24 @@ describe('createKeycloakAuth', () => {
 
     expect(keycloak.init).toHaveBeenCalledTimes(1);
     expect(keycloak.init).toHaveBeenCalledWith(
-      expect.objectContaining({ onLoad: 'check-sso', pkceMethod: 'S256' }),
+      expect.objectContaining({ adapter: 'default', onLoad: 'check-sso', pkceMethod: 'S256' }),
     );
     expect(first).toEqual({ name: 'Ana Torres', roles: ['donor'] });
     expect(second).toBe(first);
+  });
+
+  it('can start without the silent check, only completing a returning sign-in', async () => {
+    const keycloak = fakeKeycloak();
+
+    await createKeycloakAuth(keycloak as unknown as Keycloak, 'http://app', {
+      silentSso: false,
+    }).init();
+
+    expect(keycloak.init).toHaveBeenCalledWith({
+      adapter: 'default',
+      pkceMethod: 'S256',
+      checkLoginIframe: false,
+    });
   });
 
   it('returns no session for an anonymous visitor', async () => {
