@@ -46,6 +46,10 @@ Each run creates a fictional `e2e.*@example.test` account. Set `E2E_KEYCLOAK_ADM
 `E2E_KEYCLOAK_ADMIN_USER` if it is not `admin`) to remove it from Keycloak afterwards; its donor row
 stays in the local `donors_db`.
 
+## Desktop
+`desktop/` wraps the web build in Electron, with its own PKCE client (`yawar-desktop`) and a Windows
+zip (`npm run dist:win --workspace @yawar/desktop`). See [desktop/README.md](desktop/README.md).
+
 ## Sprint 2
 | Front | Backend it uses | Jira |
 |---|---|---|
