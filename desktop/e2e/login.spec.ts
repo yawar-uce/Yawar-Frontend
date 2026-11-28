@@ -41,6 +41,23 @@ async function expectDonorHome(page: Page) {
   await expect(page.getByRole('listitem')).toContainText('Tratamiento de datos personales');
 }
 
+test('the menu returns from the sign-in page to the app', async () => {
+  const userData = await mkdtemp(path.join(tmpdir(), 'yawar-e2e-'));
+  const { app, page } = await launch(userData);
+  try {
+    await page.goto(`${APP}/donor`);
+    await page.getByRole('main').getByRole('button', { name: 'Iniciar sesión' }).click();
+    await expect(page.locator('#username')).toBeVisible();
+
+    await app.evaluate(({ Menu }) => Menu.getApplicationMenu()?.getMenuItemById('home')?.click());
+
+    await expect(page).toHaveURL(`${APP}/`);
+  } finally {
+    await app.close();
+    await rm(userData, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
+  }
+});
+
 test('donor signs up, signs out and signs in again in the desktop app', async ({ request }) => {
   const userData = await mkdtemp(path.join(tmpdir(), 'yawar-e2e-'));
   const { app, page } = await launch(userData);

@@ -2,7 +2,7 @@
 // The app itself (screens, sign-in, API calls) is the web build; nothing is duplicated here.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { app, BrowserWindow, dialog, session, shell } from 'electron';
+import { app, BrowserWindow, dialog, Menu, session, shell } from 'electron';
 import { createNavigationPolicy } from './navigation.js';
 import { startServer } from './server.js';
 
@@ -28,6 +28,67 @@ function guard(contents, policy) {
   });
 }
 
+function goHome(window) {
+  window?.loadURL(`${ORIGIN}/`);
+}
+
+/** Spanish menu; "Volver al inicio" is the way back from a sign-in page. */
+function createMenu() {
+  const item = (role, label) => ({ role, label });
+  return Menu.buildFromTemplate([
+    {
+      label: 'Yawar',
+      submenu: [
+        {
+          id: 'home',
+          label: 'Volver al inicio',
+          accelerator: 'CmdOrCtrl+Shift+H',
+          click: () => goHome(BrowserWindow.getAllWindows()[0]),
+        },
+        item('reload', 'Recargar'),
+        { type: 'separator' },
+        item('quit', 'Salir'),
+      ],
+    },
+    {
+      label: 'Editar',
+      submenu: [
+        item('undo', 'Deshacer'),
+        item('redo', 'Rehacer'),
+        { type: 'separator' },
+        item('cut', 'Cortar'),
+        item('copy', 'Copiar'),
+        item('paste', 'Pegar'),
+        item('selectAll', 'Seleccionar todo'),
+      ],
+    },
+    {
+      label: 'Ver',
+      submenu: [
+        item('zoomIn', 'Acercar'),
+        item('zoomOut', 'Alejar'),
+        item('resetZoom', 'Tamaño real'),
+        item('togglefullscreen', 'Pantalla completa'),
+      ],
+    },
+  ]);
+}
+
+/** A page that cannot load (Keycloak unreachable, no network) offers the way back to the app. */
+function offerWayBack(window) {
+  window.webContents.on('did-fail-load', async (_event, code, _description, _url, isMainFrame) => {
+    const aborted = -3; // a newer navigation, or one refused by the guard
+    if (!isMainFrame || code === aborted) return;
+    await dialog.showMessageBox(window, {
+      type: 'error',
+      title: 'Yawar',
+      message: 'No se pudo abrir la página. Revisa tu conexión e inténtalo de nuevo.',
+      buttons: ['Volver al inicio'],
+    });
+    goHome(window);
+  });
+}
+
 function createWindow(policy) {
   const window = new BrowserWindow({
     width: 1100,
@@ -35,11 +96,17 @@ function createWindow(policy) {
     minWidth: 360,
     minHeight: 600,
     title: 'Yawar',
-    autoHideMenuBar: true,
-    webPreferences: { contextIsolation: true, nodeIntegration: false, sandbox: true },
+    webPreferences: {
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true,
+      // Chromium's spellchecker downloads dictionaries from a Google server on some systems.
+      spellcheck: false,
+    },
   });
   guard(window.webContents, policy);
-  window.loadURL(`${ORIGIN}/`);
+  offerWayBack(window);
+  goHome(window);
 }
 
 async function start() {
@@ -53,6 +120,8 @@ async function start() {
     allow(false),
   );
   session.defaultSession.setPermissionCheckHandler(() => false);
+  session.defaultSession.setSpellCheckerEnabled(false);
+  Menu.setApplicationMenu(createMenu());
 
   await startServer(path.join(dist, 'web'), PORT);
   createWindow(policy);
@@ -73,9 +142,10 @@ app.on('window-all-closed', () => {
 
 if (app.requestSingleInstanceLock()) {
   start().catch((error) => {
+    // EACCES: Windows reserved the port (for example for Hyper-V).
     const message =
-      error.code === 'EADDRINUSE'
-        ? `Yawar necesita el puerto ${PORT} y otro programa lo está usando. Ciérralo y vuelve a abrir Yawar.`
+      error.code === 'EADDRINUSE' || error.code === 'EACCES'
+        ? `Yawar no puede usar el puerto ${PORT}. Cierra el programa que lo ocupa o reinicia el equipo.`
         : 'Yawar no pudo iniciarse. Vuelve a instalar la aplicación.';
     console.error(error);
     dialog.showErrorBox('Yawar', message);

@@ -8,6 +8,8 @@ A minimal Electron wrapper over the web build (YAW-220): same screens, same API 
   (Yawar-Backend, `deploy/keycloak`). Tokens stay in memory, as on the web.
 - The window shows only the app, Keycloak and Google's sign-in page; other web links open in the system
   browser.
+- The menu has "Volver al inicio" (Ctrl+Shift+H) to leave a sign-in page, and a page that fails to load
+  offers the same.
 - The API Gateway must allow the origin `http://localhost:5180` in its CORS configuration (the local
   defaults do).
 
